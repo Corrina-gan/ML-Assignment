@@ -1,14 +1,12 @@
 import time
 
-import gymnasium as gym
 import numpy as np
-import rware
 import streamlit as st
 from rware.warehouse import Direction
 
-ENV_ID = "rware-tiny-2ag-v2"
+from environment import ACTION_NAMES, ENV_ID, MAX_STEPS, make_warehouse
+
 CELL = 40
-ACTION_NAMES = ("No-op", "Forward", "Left", "Right", "Toggle load")
 ROBOT_COLORS = (
     (255, 140, 0),
     (30, 136, 229),
@@ -31,7 +29,7 @@ def open_warehouse(seed):
     if previous is not None:
         previous.close()
 
-    env = gym.make(ENV_ID)
+    env = make_warehouse()
     observation, info = env.reset(seed=int(seed))
     st.session_state.warehouse_env = env
     st.session_state.warehouse_obs = observation
@@ -158,7 +156,7 @@ def paint(view_slot):
 
         if st.session_state.warehouse_done:
             st.info(
-                "This episode reached the 500-step limit from the existing environment. "
+                f"This episode reached the {MAX_STEPS}-step limit from the shared environment. "
                 "The next step starts a new episode."
             )
 
@@ -178,21 +176,19 @@ def paint(view_slot):
             if actions is None:
                 st.caption("No step yet. The robots are in their starting positions.")
             else:
-                for row in (0, 1):
-                    left, right = st.columns(2)
-                    for column, index in zip((left, right), (row * 2, row * 2 + 1)):
-                        with column:
-                            st.metric(
-                                f"Robot {index + 1}",
-                                ACTION_NAMES[actions[index]],
-                                f"{rewards[index]:.0f} reward",
-                                border=True,
-                            )
+                with st.container(horizontal=True):
+                    for index, action in enumerate(actions):
+                        st.metric(
+                            f"Robot {index + 1}",
+                            ACTION_NAMES[action],
+                            f"{rewards[index]:.0f} reward",
+                            border=True,
+                        )
 
 
 st.title("Warehouse robot navigation")
 st.caption(
-    "Four robots in the existing tiny warehouse. "
+    "Two robots in the existing tiny warehouse. "
     "They pick up requested shelves and carry them to the delivery goals. "
     "Movement uses random legal actions until an algorithm is built."
 )
@@ -255,6 +251,6 @@ else:
 st.caption(
     "Aisles are light gray. Purple shelves are stored, teal shelves are requested, "
     "and the dark tiles are the delivery goals. "
-    "Orange, blue, green, and purple squares are the four robots. "
+    "Orange and blue squares are the two robots. "
     "The black mark shows the direction they face, and a white center means the robot is carrying a shelf."
 )
