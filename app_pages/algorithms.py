@@ -127,63 +127,63 @@ else:
             alt.Chart(log)
             .mark_line(point=True)
             .encode(
-                x=alt.X("update:Q", title="Update"),
-                y=alt.Y("team_return_mean:Q", title="Team return"),
+                x=alt.X('update:Q', title='Update'),
+                y=alt.Y('team_return_mean:Q', title='Team return'),
                 tooltip=[
-                    alt.Tooltip("update:Q", title="Update"),
-                    alt.Tooltip("episodes:Q", title="Episodes"),
-                    alt.Tooltip("team_return_mean:Q", title="Team return", format=".2f"),
-                    alt.Tooltip("deliveries_mean:Q", title="Deliveries", format=".2f"),
+                    alt.Tooltip('update:Q', title='Update'),
+                    alt.Tooltip('episodes:Q', title='Episodes'),
+                    alt.Tooltip('team_return_mean:Q', title='Team return', format='.2f'),
+                    alt.Tooltip('deliveries_mean:Q', title='Deliveries', format='.2f'),
                 ],
             )
         )
         baseline = (
-            alt.Chart(pd.DataFrame({"team_return_mean": [random_return]}))
+            alt.Chart(pd.DataFrame({'team_return_mean': [random_return]}))
             .mark_rule(strokeDash=[6, 4])
-            .encode(y="team_return_mean:Q")
+            .encode(y='team_return_mean:Q')
         )
-        first_return = float(log["team_return_mean"].iloc[0])
-        last_return = float(log["team_return_mean"].iloc[-1])
-        peak_return = float(log["team_return_mean"].max())
+        first_return = float(log['team_return_mean'].iloc[0])
+        last_return = float(log['team_return_mean'].iloc[-1])
+        peak_return = float(log['team_return_mean'].max())
         st.altair_chart(
             (return_chart + baseline).properties(height=320),
             alt=(
-                f"Training team return started at {first_return:.2f}, "
-                f"peaked at {peak_return:.2f}, and ended at {last_return:.2f}. "
-                f"The dashed line is the random score of {random_return:.2f}."
+                f'Training team return started at {first_return:.2f}, '
+                f'peaked at {peak_return:.2f}, and ended at {last_return:.2f}. '
+                f'The dashed line is the random score of {random_return:.2f}.'
             ),
         )
 
         stats = log.melt(
-            id_vars=["update"],
-            value_vars=["entropy", "approx_kl", "policy_loss", "value_loss"],
-            var_name="stat",
-            value_name="value",
+            id_vars=['update'],
+            value_vars=['entropy', 'approx_kl', 'policy_loss', 'value_loss'],
+            var_name='stat',
+            value_name='value',
         )
         stat_names = {
-            "entropy": "Entropy",
-            "approx_kl": "Approx. KL",
-            "policy_loss": "Policy loss",
-            "value_loss": "Value loss",
+            'entropy': 'Entropy',
+            'approx_kl': 'Approx. KL',
+            'policy_loss': 'Policy loss',
+            'value_loss': 'Value loss',
         }
-        stats["stat"] = stats["stat"].map(stat_names)
+        stats['stat'] = stats['stat'].map(stat_names)
         stats_chart = (
             alt.Chart(stats)
             .mark_line()
             .encode(
-                x=alt.X("update:Q", title="Update"),
-                y=alt.Y("value:Q", title=None),
+                x=alt.X('update:Q', title='Update'),
+                y=alt.Y('value:Q', title=None),
                 tooltip=[
-                    alt.Tooltip("update:Q", title="Update"),
-                    alt.Tooltip("value:Q", title="Value", format=".4f"),
+                    alt.Tooltip('update:Q', title='Update'),
+                    alt.Tooltip('value:Q', title='Value', format='.4f'),
                 ],
             )
             .properties(height=140, width=280)
-            .facet(facet=alt.Facet("stat:N", title=None), columns=2)
+            .facet(facet=alt.Facet('stat:N', title=None), columns=2)
         )
         st.altair_chart(
             stats_chart,
-            alt="Policy entropy, approximate KL, and the policy and value losses across updates",
+            alt='Policy entropy, approximate KL, and the policy and value losses across updates',
         )
 
         comparison = pd.DataFrame(
